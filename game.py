@@ -83,7 +83,7 @@ class Game():
         gen_queue = deque(GENERATION_QUEUE)
 
         # while the frontier is not empty and we don't have enough rooms
-        while len(frontier) != 0 and len(rooms) < N_ROOMS:
+        while len(frontier) != 0 and len(rooms) < N_ROOMS and len(gen_queue) != 0:
             # pop the next element of the frontier
             if type == 'BFS':
                 actual_room = frontier.popleft()
@@ -92,9 +92,16 @@ class Game():
             else:
                 actual_room = poprandom(frontier)
 
+            # For RFS, we shuffle the directions
+            if type == 'RFS':
+                random.shuffle(actual_room.allowed_connections)
+
             # for each direction of the actual room
-            random.shuffle(actual_room.allowed_connections)
             for dir in actual_room.allowed_connections:
+                # if we don't have any more rooms to build, then we stop
+                if len(gen_queue) == 0:
+                    break
+
                 # get the next room type and size from the generation queue
                 room_type, room_sizes, should_expand = gen_queue.popleft()
 
