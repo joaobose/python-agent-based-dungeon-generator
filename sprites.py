@@ -5,10 +5,11 @@ from settings import *
 
 
 class Room():
-    def __init__(self, game, x, y, width, height, color=GREY):
+    def __init__(self, game, x, y, width, height, color=GREY, should_expand=True):
         self.hit_rect = pg.Rect(x - 1, y - 1, width + 2, height + 2)
         self.rect = pg.Rect(x, y, width, height)
-        self.allowed_connections = ["up", "down", "left", "right"]
+        self.allowed_connections = ["up", "down",
+                                    "left", "right"] if should_expand else []
         self.color = color
 
     def draw(self, surface):

@@ -40,8 +40,6 @@ class Game():
         self.rooms = []
         self.corridors = []
 
-        self.room_sizes = [10, 14, 18, 22, 26]
-
         # Sampling NxM generated dungeons, and spreading them in the screen
         N = 7
         M = 6
@@ -74,12 +72,15 @@ class Game():
         corridors = []
 
         # define the actual room as the first room of the dungeon
-        actual_room = Room(self, x, y, 10, 10, WHITE)
+        actual_room = Room(self, x, y, 10, 10, R_START)
         rooms.append(actual_room)
 
         # define a deque to store the rooms that we need to visit
         frontier = deque()
         frontier.append(actual_room)
+
+        # define the generation queue to decide the order of the rooms
+        gen_queue = deque(GENERATION_QUEUE)
 
         # while the frontier is not empty and we don't have enough rooms
         while len(frontier) != 0 and len(rooms) < N_ROOMS:
@@ -94,21 +95,20 @@ class Game():
             # for each direction of the actual room
             random.shuffle(actual_room.allowed_connections)
             for dir in actual_room.allowed_connections:
-                # choose a random room type TODO
-                corridor_lenght = 2
-                room_size = random.choice(self.room_sizes)
-                room = self.make_room(
-                    actual_room, dir, corridor_lenght, room_size)
+                # get the next room type and size from the generation queue
+                room_type, room_sizes, should_expand = gen_queue.popleft()
 
-                # the last room is always a boss room
-                if len(rooms) == N_ROOMS - 1:
-                    room = self.make_room(
-                        actual_room, dir, corridor_lenght, 32)
+                corridor_lenght = 2
+                room_size = random.choice(room_sizes)
+                room = self.make_room(
+                    actual_room, dir, corridor_lenght, room_size, room_type, should_expand)
 
                 # check if the room collides with any other element in the dungeon
                 for elem in chain(rooms, corridors):
                     if elem.hit_rect.colliderect(room.hit_rect):
                         # if it does, then we can't build in that direction
+                        gen_queue.appendleft(
+                            (room_type, room_sizes, should_expand))
                         break
                 else:
                     # if it doesn't, then we can build the room and the corridor
@@ -131,7 +131,7 @@ class Game():
 
         return rooms, corridors
 
-    def make_room(self, actual_room, dir, corridor_lenght, size):
+    def make_room(self, actual_room, dir, corridor_lenght, size, color, should_expand):
         """
         Given a room, and a direction, generates a new room
         """
@@ -155,7 +155,7 @@ class Game():
             x = actual_room.rect.x + corridor_lenght + actual_room.rect.width
             y = actual_room.rect.centery - h / 2
 
-        return Room(self, x, y, w, h)
+        return Room(self, x, y, w, h, color, should_expand)
 
     def make_corridor(self, actual_room, r, dir):
         """
@@ -165,19 +165,19 @@ class Game():
 
         if dir == "up":
             c = Corridor(self, actual_room.rect.centerx - 2, r.rect.bottom,
-                         4, actual_room.rect.top - r.rect.bottom, BLUE)
+                         4, actual_room.rect.top - r.rect.bottom, GREY)
 
         if dir == "down":
             c = Corridor(self, actual_room.rect.centerx - 2, actual_room.rect.bottom,
-                         4, r.rect.top - actual_room.rect.bottom, BLUE)
+                         4, r.rect.top - actual_room.rect.bottom, GREY)
 
         if dir == "left":
             c = Corridor(self, r.rect.right, r.rect.centery - 2,
-                         actual_room.rect.x - r.rect.right, 4, BLUE)
+                         actual_room.rect.x - r.rect.right, 4, GREY)
 
         if dir == "right":
             c = Corridor(self, actual_room.rect.right, actual_room.rect.centery -
-                         2, r.rect.x - actual_room.rect.right, 4, BLUE)
+                         2, r.rect.x - actual_room.rect.right, 4, GREY)
 
         return c
 
