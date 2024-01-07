@@ -18,6 +18,8 @@ img_folder = path.join(game_folder, "pngs")
 snd_folder = path.join(game_folder, "snds")
 
 N_ROOMS = 10
+SCALE = 1
+SAMPLE_VIZ = False
 
 # ROOM COLORS
 
@@ -47,5 +49,9 @@ GENERATION_QUEUE = [
     (R_PLAYER_BUFF, [16, 24], True),
     (R_STORE, [10], True)
 ]
+
+# SCALE GENERATION QUEUE LENGTH BY REPETITION
+GENERATION_QUEUE *= SCALE
+N_ROOMS = (N_ROOMS - 1) * SCALE + 1
 
 assert len(GENERATION_QUEUE) == N_ROOMS - 1

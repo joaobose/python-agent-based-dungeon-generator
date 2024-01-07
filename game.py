@@ -41,18 +41,24 @@ class Game():
         self.corridors = []
 
         # Sampling NxM generated dungeons, and spreading them in the screen
-        N = 7
-        M = 6
+        if SAMPLE_VIZ:
+            N = 7
+            M = 6
 
-        for i in range(N):
-            for j in range(M):
-                X = i * WIDTH / N + WIDTH / (2 * N)
-                Y = j * HEIGHT / M + HEIGHT / (2 * M)
+            for i in range(N):
+                for j in range(M):
+                    X = i * WIDTH / N + WIDTH / (2 * N)
+                    Y = j * HEIGHT / M + HEIGHT / (2 * M)
 
-                gen_rooms, gen_corridors = self.generate_dungeon_expand(
-                    "RFS", X, Y)
-                self.rooms.extend(gen_rooms)
-                self.corridors.extend(gen_corridors)
+                    gen_rooms, gen_corridors = self.generate_dungeon_expand(
+                        "RFS", X, Y)
+                    self.rooms.extend(gen_rooms)
+                    self.corridors.extend(gen_corridors)
+        else:
+            gen_rooms, gen_corridors = self.generate_dungeon_expand(
+                "RFS", WIDTH / 2, HEIGHT / 2)
+            self.rooms.extend(gen_rooms)
+            self.corridors.extend(gen_corridors)
 
     def generate_dungeon_expand(self, type, x=WIDTH / 2, y=HEIGHT / 2):
         """
